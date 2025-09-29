@@ -1,0 +1,65 @@
+
+{% extends "base.html" %}
+{% block content %}
+<section class="new-note card">
+    <h2>Add / Edit Note</h2>
+    <form id="note-form" action="{{ url_for('add') }}" method="post">
+        <input type="hidden" id="note-id" name="id" value=""/>
+        <div class="row">
+            <label>Title</label>
+            <input name="title" id="title" required />
+        </div>
+        <div class="row">
+            <label>Body</label>
+            <textarea name="body" id="body" rows="4" required></textarea>
+        </div>
+        <div class="actions">
+            <button type="submit">Save</button>
+            <button type="button" id="reset-btn">Reset</button>
+        </div>
+    </form>
+</section>
+
+<section class="notes-list">
+    {% if notes %}
+        {% for n in notes %}
+        <article class="note card" data-id="{{ n.id }}">
+            <div class="note-head">
+                <h3>{{ n.title }}</h3>
+                <small>Updated: {{ n.updated_at }}</small>
+            </div>
+            <p>{{ n.body }}</p>
+            <form class="inline" action="{{ url_for('delete', note_id=n.id) }}" method="post">
+                <button type="submit">Delete</button>
+            </form>
+            <form class="inline" action="{{ url_for('edit', note_id=n.id) }}" method="post" onsubmit="return fillAndSubmitEdit(this, {{ n.id }})">
+                <input type="hidden" name="title" value="{{ n.title }}">
+                <input type="hidden" name="body" value="{{ n.body }}">
+                <button type="submit">Quick Update</button>
+            </form>
+            <button class="ghost" onclick="fillForm({{ n.id }}, '{{ n.title|e }}', `{{ n.body|e }}`)">Edit in Form</button>
+        </article>
+        {% endfor %}
+    {% else %}
+        <p>No notes yet. Add your first note above!</p>
+    {% endif %}
+</section>
+
+<script>
+const form = document.getElementById('note-form');
+const resetBtn = document.getElementById('reset-btn');
+function fillForm(id, title, body) {
+    document.getElementById('title').value = title;
+    document.getElementById('body').value = body;
+    form.action = '/edit/' + id;
+}
+function fillAndSubmitEdit(formEl, id) {
+    // noop: server handles edit with hidden fields
+    return true;
+}
+resetBtn.addEventListener('click', () => {
+    form.action = '/add';
+    form.reset();
+});
+</script>
+{% endblock %}
